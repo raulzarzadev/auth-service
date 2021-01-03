@@ -1,0 +1,49 @@
+@api = http://localhost:3015/user
+### POST SIGN UP 
+
+POST {{api}}/signup
+Content-Type: application/json
+
+{
+    "email": ""
+}
+
+
+### POST CONFIRM MAIL
+
+POST {{api}}/signup/:token
+Content-Type: application/json
+
+{
+    "password":"",
+    "rol":""
+}
+
+### SIGN IN FIELD
+
+POST {{api}}/signin
+Content-Type: application/json
+
+{
+    "email":"",
+    "password":""
+}
+
+
+### FORGOT PASSWORD
+
+POST {{api}}/forgot-password
+Content-Type: application/json
+
+{
+    "email": ""
+}
+
+### RECOVER PASSWORD
+POST {{api}}/recover-password/:token
+Content-Type:  application/json
+
+{
+   "email":"",
+    "password":""
+}
