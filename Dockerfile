@@ -1,4 +1,4 @@
-FROM node:slim
+FROM node:alpine
 
 RUN mkdir -p /usr/src/app
 
@@ -6,8 +6,8 @@ WORKDIR /usr/src/app
 
 COPY ./ ./
 
-RUN npm install
+RUN yarn install
 
-EXPOSE 3001
+EXPOSE 3015
 
-CMD "npm" "run" "dev"
+CMD "yarn" "start"
