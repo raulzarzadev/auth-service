@@ -50,6 +50,7 @@ usersCtrl.sigupMail = async (req, res) => {
   // *** respondiendo usuario y token
 
   const payload = {
+    email,
     id: newUserId,
   };
 
@@ -81,8 +82,8 @@ usersCtrl.sigupMail = async (req, res) => {
 };
 
 usersCtrl.confirmEmail = async (req, res) => {
-  
   // *** confirma email
+  //TODO falta validar que este token solo hay sido usado solo una vez
   const { password, rol } = req.body;
   const token = jwt.verify(req.params.token, process.env.JWT_SECRET_TEXT);
   if (!token)
@@ -108,7 +109,7 @@ usersCtrl.confirmEmail = async (req, res) => {
   });
 
   const payload = {
-    email,
+    email: user.email,
     id: user._id,
     rol: user.rol,
   };
@@ -145,7 +146,7 @@ usersCtrl.signIn = async (req, res) => {
 
   // *** validando password
 
-  const isPaswordMatch = await user.matchPassword(password);
+  const isPaswordMatch = await user.matchPassword(password || "");
   if (!isPaswordMatch)
     return res.json({
       ok: false,
@@ -176,6 +177,7 @@ usersCtrl.forgotPassword = async (req, res) => {
   if (user) {
     // *** Genera token para recuerar contraseña
     const payload = {
+      email: user.email,
       recover: true,
       id: user.id,
     };
