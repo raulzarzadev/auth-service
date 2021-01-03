@@ -11,5 +11,5 @@ services:
       - SIGNUP_PORT
       - JWT_SECRET_TEXT
       - SIGNUP_HOST
-      - MONGO_NDB
+      - USERS_SERVICE_DB
     
