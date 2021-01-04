@@ -37,8 +37,10 @@ Esta basado en una autenticacion agíl de dos pasos.
 
 MONGO_NDB
 
-#SIGNUP_HOST=##replace with domain to production
-SIGNUP_HOST=http://localhost:3015
+#FRONT_HOST=##replace with domain to production
+
+FRONT_HOST
+
 SIGNUP_PORT
 
 JWT_SECRET_TEXT

@@ -10,4 +10,4 @@ RUN yarn install
 
 EXPOSE 3015
 
-CMD "yarn" "start"
+CMD "yarn" "dev"

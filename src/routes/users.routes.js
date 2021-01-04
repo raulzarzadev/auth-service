@@ -32,7 +32,7 @@ router.route("/signin")
 router.route("/forgot-password")
   .post(forgotPassword);
 
-router.route("/recover-password/:token")
+router.route("/forgot-password/:token")
   .post(recoverPassword);
 
 module.exports = router;

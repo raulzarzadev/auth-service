@@ -6,7 +6,7 @@ const InvalidToken = require("../models/InvalidToken");
 const { json } = require("express");
 
 //**** host segun envarioment****
-const host = process.env.SIGNUP_HOST;
+const host = process.env.FRONT_HOST;
 
 const usersCtrl = {};
 
@@ -66,7 +66,7 @@ usersCtrl.sigupMail = async (req, res) => {
     ¿Iniciaste un proceso para subscribirte a negociosdelbarrio.com ?
     \n 
     Sigue el siguiente enlace:
-    \n ${host}/signup/${token} 
+    \n ${host}/registrate/${token} 
     \n 
     ¿No fuiste tu? Tu cuenta esta segura. Omite este correo.
     \n
@@ -193,7 +193,7 @@ usersCtrl.forgotPassword = async (req, res) => {
       \n 
       (Este enlace solo sera valido por 15 min)
       \n 
-      ${host}/recover-password/${token} `;
+      ${host}/forgot-password/${token} `;
     } else {
       subject = `Concluye tu registro`;
       content = `
@@ -203,7 +203,7 @@ usersCtrl.forgotPassword = async (req, res) => {
       \n 
       (Este enlace solo sera valido por 15 min)
       \n 
-      ${host}/signuo/${token} `;
+      ${host}/forgot-pasword/${token} `;
     }
 
     // *** Enviando email
@@ -215,6 +215,7 @@ usersCtrl.forgotPassword = async (req, res) => {
       type: "emailSent",
     });
   } else {
+    //TODO envia correo para inscribirlo o json para decir que no existe???
     res.json({
       message: "Revisa tu correo para recuperar tu contraseña",
       ok: true,
@@ -224,9 +225,9 @@ usersCtrl.forgotPassword = async (req, res) => {
 };
 
 usersCtrl.recoverPassword = async (req, res) => {
-  const { email, password } = req.body;
+  const { password } = req.body;
   const { token } = req.params;
-  const { id } = jwt.verify(token, process.env.JWT_SECRET_TEXT);
+  const { id, email } = jwt.verify(token, process.env.JWT_SECRET_TEXT);
 
   // *** verificar si token esta en la lista negra
 
@@ -249,6 +250,7 @@ usersCtrl.recoverPassword = async (req, res) => {
         message: "Credenciales invalidas",
         type: "invalidForm",
       });
+
     const newPassword = await user.encryptPassword(password);
     // *** agregar token a lista negra
     const newInvalidToken = new InvalidToken({ token });
