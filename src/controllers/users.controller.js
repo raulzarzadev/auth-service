@@ -6,7 +6,7 @@ const InvalidToken = require("../models/InvalidToken");
 const { json } = require("express");
 
 //**** host segun envarioment****
-const host = process.env.FRONT_HOST;
+const host = process.env.MAIN_DOMAIN;
 
 const usersCtrl = {};
 

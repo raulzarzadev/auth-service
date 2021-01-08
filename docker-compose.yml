@@ -10,7 +10,7 @@ services:
       - EMAIL_PASSWORD
       - SIGNUP_PORT
       - JWT_SECRET_TEXT
-      - FRONT_HOST
+      - MAIN_DOMAIN
       - USERS_SERVICE_DB
     volumes: 
       - .:/usr/src/app

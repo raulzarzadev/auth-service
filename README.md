@@ -37,9 +37,7 @@ Esta basado en una autenticacion agíl de dos pasos.
 
 MONGO_NDB
 
-#FRONT_HOST=##replace with domain to production
-
-FRONT_HOST
+MAIN_DOMAIN
 
 SIGNUP_PORT
 
