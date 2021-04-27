@@ -35,16 +35,16 @@ Esta basado en una autenticacion agíl de dos pasos.
 
 # Variables de entorno
 
-MONGO_NDB
+    MONGO_NDB
 
-MAIN_DOMAIN
+    MAIN_DOMAIN
 
-SIGNUP_PORT
+    SIGNUP_PORT
 
-JWT_SECRET_TEXT
+    JWT_SECRET_TEXT
 
-EMAIL_PASSWORD
-EMAIL_USER
+    EMAIL_PASSWORD
+    EMAIL_USER
 
 ## Pendientes
 

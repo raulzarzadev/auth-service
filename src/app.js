@@ -1,20 +1,20 @@
-const express = require("express");
-const morgan = require("morgan");
+const express = require('express')
+const morgan = require('morgan')
 
-const cors = require("cors");
+const cors = require('cors')
 
-const app = express();
+const app = express()
 
-//settings
-app.set("port", process.env.SIGNUP_PORT || 3015);
+// settings
+app.set('port', process.env.SIGNUP_PORT || 3015)
 
-//middlewares
+// middlewares
 
-app.use(morgan("dev"));
-app.use(express.json());
-app.use(cors());
+app.use(morgan('dev'))
+app.use(express.json())
+app.use(cors())
 
-//routes
-app.use("/user", require("./routes/users.routes"));
+// routes
+app.use('/user', require('./routes/users.routes'))
 
-module.exports = app;
+module.exports = app

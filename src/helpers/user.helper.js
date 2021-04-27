@@ -1,42 +1,42 @@
-const nodemailer = require("nodemailer");
+const nodemailer = require('nodemailer')
 
-const userHelper = {};
+const userHelper = {}
 
-const user = process.env.EMAIL_USER;
-const pass = process.env.EMAIL_PASSWORD;
+const user = process.env.EMAIL_USER
+const pass = process.env.EMAIL_PASSWORD
 
 userHelper.sendEmail = (email, subjet, content) => {
-  async function main() {
+  async function main () {
     // Generate test SMTP service account from ethereal.email
 
     // create reusable transporter object using the default SMTP transport
-    let transporter = nodemailer.createTransport({
-      host: "smtpout.secureserver.net",
+    const transporter = nodemailer.createTransport({
+      host: 'smtpout.secureserver.net',
       port: 587,
       secure: false,
       auth: {
         user,
-        pass,
-      },
-    });
+        pass
+      }
+    })
 
     transporter.verify(function (error, success) {
       if (error) {
-        console.log(error);
+        console.log(error)
       } else {
-        console.log("Server is ready to take our messages");
+        console.log('Server is ready to take our messages')
       }
-    });
+    })
 
     // send mail with defined transport object
-    let info = await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: `Negocios del Barrio <${user}>`, // sender address
       to: email, // list of receivers
       subject: subjet, // Subject line
-      text: content, // html body
-    });
+      text: content // html body
+    })
 
-    console.log("Message sent: %s", info.messageId);
+    console.log('Message sent: %s', info.messageId)
     // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 
     // Preview only available when sending through an Ethereal account
@@ -44,7 +44,7 @@ userHelper.sendEmail = (email, subjet, content) => {
     // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
   }
 
-  main().catch(console.error);
-};
+  main().catch(console.error)
+}
 
-module.exports = userHelper;
+module.exports = userHelper

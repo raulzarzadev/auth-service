@@ -1,4 +1,4 @@
-@api = http://localhost:4015/user
+@api = http://localhost:3015/user
 ### POST SIGN UP 
 
 POST {{api}}/signup

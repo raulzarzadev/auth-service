@@ -1,16 +1,19 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
-const URI = process.env.USERS_SERVICE_DB;
+const { MONGO_NDB } = process.env
 
-mongoose.connect(URI, {
-  useNewUrlParser: true,
-  useCreateIndex: true,
-  useUnifiedTopology: true,
-  useFindAndModify: false,
-});
+mongoose.connect(
+  MONGO_NDB, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false
+  }
+)
 
-const connection = mongoose.connection;
+const connection = mongoose.connection
 
-connection.once("open", () => {
-  console.log("Signup DB is conected");
-});
+connection.once('open', () => {
+  console.log('Signup DB is conected')
+})
+  
