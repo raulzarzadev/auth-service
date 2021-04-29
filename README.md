@@ -1,55 +1,72 @@
-# Micro servicio de login de usuarios
+# AUTH service rz
 
-## nodejs - express - nodemailer - docker
+**Signup, signin and verify sessions for your app**
 
-Este servicio permite administrar de forma segura la creacion y de ususarios.
+_You can get a compy or make a fork but do not forget the star_
 
-## Incluye:
+    git clone git@github.com:raulzarzadev/signupUserService.git
+    cd signupUserService/
+    yarn install
+    yarn dev
 
-- Signup
-- Signin
-- RecoverPassword
+## This project include this and some other packages
 
-## Diseño
+nodejs - express - nodemailer - docker - prettier - eslint
 
-Esta basado en una autenticacion agíl de dos pasos.
-
-### Sign up
-
-1. Ingresa email
-2. Recibe link en email
-3. Ingresa la contraseña
-4. Recibe un token
-
-### Sing in
-
-1. Ingresa email y contraseña
-2. Recibe un token
-
-### Forgot password
-
-1. Ingresa email
-2. Recibe link en email
-3. Ingresa contraseña e email
-4. Recibe token
-
-# Variables de entorno
+## Variables de entorno
 
     MONGO_NDB
-
-    MAIN_DOMAIN
-
     SIGNUP_PORT
-
     JWT_SECRET_TEXT
-
     EMAIL_PASSWORD
     EMAIL_USER
 
-## Pendientes
+# Usage
 
-1. Refresh token
-2. Modulizar el envio de emails
-3. Delete and update user
+Send an email to start signup process
 
-### Gracias por ser parte de este proyecto. 
+        POST /signup
+            body: { email }
+
+Send a new password whit the token in the email as param to confirm sigup 
+
+        POST /signup/:token
+            body:{ password }
+
+Send the correct credetials to recive a session token
+        
+        POST /signin
+            body:{ email, password }
+
+Send a email for to restart your password
+
+        POST /recover
+            body: { email }
+
+Send a new password with the token did you recive in the las email as param
+
+        POST /recover/:token
+            body:{ password }
+
+Use token in authorization header for to validate your session or close it 
+
+        POST /signout
+            headers: { authorization: token }
+
+
+        POST /session
+            headers: { authorization: token }
+
+To manage session you just going to recive  a JSON 
+
+        {
+          "status": 200,
+          "type": "SESSION_VALID"
+        }
+
+        or 
+
+        {
+          "status": 401,
+          "type": "SESSION_INVALID"
+        }
