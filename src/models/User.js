@@ -9,7 +9,7 @@ const userSchema = new Schema(
       trim: true,
       unique: true
     },
-    emailConfirmed: {
+    active: {
       type: Boolean
     },
     password: {

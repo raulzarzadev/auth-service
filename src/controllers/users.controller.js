@@ -1,306 +1,189 @@
-const User = require('../models/User')
-const jwt = require('jsonwebtoken')
-const { sendEmail } = require('../helpers/user.helper')
-const InvalidToken = require('../models/InvalidToken')
+import { content, htmlContent, subject } from "../EMAIL'S/signup"
+import formatResponse from '../helpers/formatResponse'
+import {
+  JWTverify,
+  JWTgenerate,
+  JWTIsClean,
+  JWTInvalidate,
+  JWTVerifyAndInvalidate
+} from '../helpers/JWTutils'
+import sendEmail from '../helpers/sendEmail'
+import ActiveSession from '../models/ActiveSession'
+import InvalidToken from '../models/InvalidToken'
+import User from '../models/User'
 
-//* *** host segun envarioment****
-const host = process.env.MAIN_DOMAIN
-
-const usersCtrl = {}
-
-usersCtrl.getUser = async (req, res) => {
-  const user = await User.findById(req.params.id)
-  res.json({
-    type: 'successUser',
-    ok: true,
-    user: user
-  })
+export const user = () => {
+  console.log('user')
 }
-
-usersCtrl.sigupMail = async (req, res) => {
+export const signup = async (req, res) => {
   const { email } = req.body
-  let newUserId
+  // find user
+  const user = await User.findOne({ email }, { active: 1, _id: 1 })
+  // if not exist ,  create user {email, active=flase}
 
-  // *** comprobando usuario no exista o email no este confirmado
-  const user = await User.findOne(
-    { email },
-    { _id: 1, credit: 1, email: 1, emailConfirmed: 1, rol: 1 }
-  )
   if (!user) {
-    const newUser = new User({
-      email,
-      emailConfirmed: false
-    })
-    const userSaved = await newUser.save()
-    newUserId = userSaved._id
+    const newUser = new User({ email, active: false })
+    newUser.save()
   }
-  if (user && user.emailConfirmed) {
-    return res.json({
-      ok: false,
-      message: 'este mail ya fue confirmado',
-      type: 'alreadyConfirm'
-    })
-  }
-  if (user && !user.emailConfirmed) {
-    newUserId = user._id
-  }
-
-  // *** respondiendo usuario y token
-
-  const payload = {
-    email,
-    id: newUserId
-  }
-
-  const token = await jwt.sign(payload, process.env.JWT_SECRET_TEXT, {
-    expiresIn: 60 * 60 * 24 // expires in 24 hours
-  })
-
-  // *** enviar correo  para esperar confirmacion
-  // TODO ¿Como modularizar esto?
-
-  const subjet = 'Solicitud de registro'
-  const content = `
-    ¿Iniciaste un proceso para subscribirte a negociosdelbarrio.com ?
-    \n 
-    Sigue el siguiente enlace:
-    \n ${host}/registrate/${token} 
-    \n 
-    ¿No fuiste tu? Tu cuenta esta segura. Omite este correo.
-    \n
-    ¿Dudas? Contactanos https://negociosdelbarrio.com/contacto 
-    `
-  sendEmail(email, subjet, content)
-
-  res.json({
-    ok: true,
-    message: 'Revisa tu correo para concluir tu registro',
-    type: 'emailSent'
-  })
-}
-
-usersCtrl.confirmEmail = async (req, res) => {
-  // *** confirma email
-  // TODO falta validar que este token solo hay sido usado solo una vez
-  const { password, rol } = req.body
-  const token = jwt.verify(req.params.token, process.env.JWT_SECRET_TEXT)
-  if (!token) { return res.json({ ok: false, type: 'invalidToken', type2: 'tryAgain' }) }
-
-  const user = await User.findById(token.id)
-
-  if (!user) { return res.json({ ok: false, type: 'signupFail', type2: 'tryAgain' }) }
-
-  if (user.emailConfirmed) {
-    return res.json({
-      message: 'Este correo ya fue validado.',
-      type: 'alreadyConfirmed',
-      ok: false
-    })
-  }
-
-  const passwordCryp = await user.encryptPassword(password)
-  await User.findByIdAndUpdate(token.id, {
-    password: passwordCryp,
-    emailConfirmed: true,
-    rol
-  })
-
-  const payload = {
-    email: user.email,
-    id: user._id,
-    rol: user.rol
-  }
-  const newToken = await jwt.sign(payload, process.env.JWT_SECRET_TEXT)
-
-  res.json({
-    message: 'Su correo electronico ha sido confirmado',
-    ok: true,
-    type: 'alreadyConfirmed',
-    type2: 'successSignIn',
-    token: newToken
-  })
-}
-
-usersCtrl.signIn = async (req, res) => {
-  const { email, password } = req.body
-
-  const user = await User.findOne(
-    { email },
-    {
-      email: 1,
-      password: 1,
-      rol: 1,
-      emailConfirmed: 1
-    }
-  )
-  if (!user || !user.emailConfirmed) {
-    return res.json({
-      ok: false,
-      message: 'incio de sesion fallo',
-      type: 'faildSignIn',
-      type2: 'notEmailConfirmed'
-    })
-  }
-
-  // *** validando password
-
-  const isPaswordMatch = await user.matchPassword(password || '')
-  if (!isPaswordMatch) {
-    return res.json({
-      ok: false,
-      message: 'inicio de sesion fallo',
-      type: 'faildSignIn'
-    })
-  }
-
-  // *** respondiendo usuario y token
-
-  const payload = {
-    email,
-    id: user._id,
-    rol: user.rol
-  }
-  const token = await jwt.sign(payload, process.env.JWT_SECRET_TEXT)
-
-  res.json({
-    user: payload,
-    ok: true,
-    message: 'bienvendio',
-    type: 'successSignIn',
-    token
-  })
-}
-
-usersCtrl.forgotPassword = async (req, res) => {
-  const user = await User.findOne({ email: req.body.email })
-  if (user) {
-    // *** Genera token para recuerar contraseña
-    const payload = {
-      email: user.email,
-      recover: true,
-      id: user.id
-    }
-    const token = await jwt.sign(payload, process.env.JWT_SECRET_TEXT, {
-      expiresIn: 60 * 15 // 15 minutos
-    })
-    // ***Content dependara si completo o no su registro
-    let content
-    let subject
-    if (user.emailConfirmed) {
-      subject = 'Recuperando contraseña'
-      content = `Para recuperar tu contraseña da click en el sigiente enlace o pegalo en la barra de direcciones:
-      \n 
-      (Este enlace solo sera valido por 15 min)
-      \n 
-      ${host}/forgot-password/${token} `
-    } else {
-      subject = 'Concluye tu registro'
-      content = `
-      Al parecer no habias completado tu registro. 
-      \n
-      Termina dando click en el siguente enlace, o pegalo en la barra de direcciones
-      \n 
-      (Este enlace solo sera valido por 15 min)
-      \n 
-      ${host}/forgot-pasword/${token} `
-    }
-
-    // *** Enviando email
-
-    sendEmail(user.email, subject, content)
-    res.json({
-      message: 'Revisa tu correo para recuperar tu contraseña',
-      ok: true,
-      type: 'emailSent'
-    })
-  } else {
-    // TODO envia correo para inscribirlo o json para decir que no existe???
-    res.json({
-      message: 'Revisa tu correo para recuperar tu contraseña',
-      ok: true,
-      type: 'emailSent'
-    })
-  }
-}
-
-usersCtrl.recoverPassword = async (req, res) => {
-  const { password } = req.body
-  const { token } = req.params
-  const { id, email } = jwt.verify(token, process.env.JWT_SECRET_TEXT)
-
-  // *** verificar si token esta en la lista negra
-
-  const isInvalidToken = await InvalidToken.findOne({
-    token
-  })
-
-  // *** si el token esta en la lista negra , return ok: false}
-
-  if (isInvalidToken) {
-    return res.json({
-      message: 'El token ya no es valido',
-      ok: false,
-      type: 'invalidToken'
-    })
-  } else {
-    const user = await User.findById(id)
-    if (user.email !== email) {
-      return res.json({
-        message: 'Credenciales invalidas',
-        type: 'invalidForm'
-      })
-    }
-
-    const newPassword = await user.encryptPassword(password)
-    // *** agregar token a lista negra
-    const newInvalidToken = new InvalidToken({ token })
-    newInvalidToken.save()
-    // *** actualiza usuario con nueva contraseña
-    await User.findByIdAndUpdate(
-      { _id: id },
-      { password: newPassword },
-      { new: true }
+  if (user?.active) {
+    // if exist and is actve
+    return res.json(
+      formatResponse(200, 'SIGNUP_FAIL', 'This email already active')
     )
-    // ** Prepara token para signIn
-    const payload = {
-      id: user._id,
-      email: user.email,
-      rol: user.rol
-    }
-    const newToken = await jwt.sign(payload, process.env.JWT_SECRET_TEXT)
-
-    res.json({
-      user: payload,
-      message: 'Contraseña actualizada',
-      ok: true,
-      type: 'userUpdated',
-      type2: 'successSignIn',
-      token: newToken
-    })
   }
+
+  const payload = { email }
+  const token = JWTgenerate(payload, 0.1)
+  console.log('token', token)
+  /*
+  const from = 'auth-serivce'
+  sendEmail(
+    email,
+    from,
+    subject,
+    content,
+    htmlContent(`http://localhost:3015/signup/${token}`)
+  ) */
+
+  // not exist or is not active
+  res.json(formatResponse(200, 'EMAIL_SENT'))
+  // send email with token
 }
 
-usersCtrl.deleteUser = async (req, res) => {
-  const userDeleted = await User.findByIdAndDelete(req.params.id)
-  if (!userDeleted) {
-    return res.json({
-      message: 'este usuario no existe',
-      type: 'userUpdated',
-      ok: false
-    })
+export const confirm = async (req, res) => {
+  const { token } = req.params
+  const { password } = req.body
+
+  // check if token is valid
+  const tokenValidated = await JWTverify(token)
+
+  // if (validToken) return formatResponse(401, 'TOKEN_INVALID')
+
+  if (!tokenValidated.isValid) {
+    return res.json(formatResponse(200, 'TOKEN_INVALID'))
+  } // TODO response find but is not valid
+
+  // check if token is inside of invalidList
+  // if exist reject response
+  const tokenIsClean = await JWTIsClean(token)
+  if (!tokenIsClean) {
+    return res.json(formatResponse(200, 'TOKEN_USED'))
   }
-  if (userDeleted) {
-    return res.json({
-      message: 'eliminando a ' + userDeleted.email,
-      type: 'userUpdated',
-      ok: true
-    })
-  }
+  // if not exist, saved in and keep working
+  await JWTInvalidate(token)
+
+  // resive email, token and pass and update user {email, password , active=true}
+  // set pass to user
+  const user = await User.findOne({ email: tokenValidated?.payload?.email })
+  console.log('user, password', user, password, tokenValidated)
+
+  const newPassword = await user.encryptPassword(password)
+  await User.updateOne({
+    email: tokenValidated?.payload?.email,
+    password: newPassword,
+    active: true
+  })
+  // send signin-token
+  res.json(formatResponse(200, 'PASSWORD_UPDATED'))
 }
 
-usersCtrl.updateUser = async (req, res) => {
-  const user = await User.findById(req.params.id)
-  res.json(user.email)
+export const singin = async (req, res) => {
+  const { email, password } = req.body
+  console.log('email, pass', email, password)
+
+  // user and password match
+  const user = await User.findOne({ email })
+  const match = await user.matchPassword(password)
+  console.log('match', match)
+  // if match
+  const expireInHours = (hours) => {
+    const currentTime = new Date().getTime()
+    const expireIn = hours * 1000 * 60 * 60
+    return currentTime + expireIn // hour * ms
+  }
+  if (!match) {
+    return res.json(formatResponse(200, 'SIGNIN_FAIL'))
+  }
+  // close other sessions
+  await ActiveSession.findOneAndRemove({ email })
+  const newSession = new ActiveSession({
+    email,
+    expire_at: expireInHours(24)
+  })
+  console.log('newSession', newSession)
+  // send session to activeSession
+  await newSession.save()
+  // send new token
+  const newToken = JWTgenerate({ email, session: newSession._id })
+  res.json(formatResponse(200, 'SIGNIN_OK', { token: newToken }))
 }
 
-module.exports = usersCtrl
+export const signout = async (req, res) => {
+  const { token } = req.params
+  const tokenValidated = await JWTverify(token)
+  const tokenIsClean = await JWTIsClean(token)
+
+  // resive token, validate sesion
+  if (!tokenIsClean || !tokenValidated.isValid) {
+    return res.json(formatResponse(200, 'ERROR'))
+  }
+  // remove session
+  const sessionId = tokenValidated?.payload?.session
+  if (sessionId) await ActiveSession.findByIdAndRemove(sessionId)
+  res.json(formatResponse(200, 'SIGNOUT_OK'))
+}
+
+export const recoverpass = async (req, res) => {
+  const { email } = req.body
+  const token = JWTgenerate({ email })
+
+  // find user
+  const user = await User.findOne({ email, active: true })
+
+  // user NOT exist or is NOT active
+  if (!user) return res.json(formatResponse(200, 'EMAIL_SENT*'))
+  console.log('recover token', token)
+
+  /* sendEmail({
+    to: email,
+    subject: 'Recover Password',
+    link: `https://localhost:3015/recover/${token}`,
+    title: 'Recuperando Contraseña'
+  }) */
+  res.json(formatResponse(200, 'EMAIL_SENT'))
+
+  // resive email
+  // send email whit token
+}
+export const confirmrecover = async (req, res) => {
+  const { token } = req.params
+  const { password } = req.body
+  // verifica token
+  const { isValid, isClean, payload } = await JWTVerifyAndInvalidate(token)
+  console.log('isValid, isClean', isValid, isClean, payload)
+
+  if (!isValid || !isClean) {
+    return res.json(formatResponse(200, 'ERROR'))
+  }
+  const user = await User.findOne({ email: payload.email }, { email: 1, active: 1, password: 1 })
+  const newPassword = await user.encryptPassword(password)
+  await User.findOneAndUpdate({ email: user.email }, { password: newPassword })
+  const newToken = JWTgenerate({ email: user.email })
+  return res.json(formatResponse(200, 'PASSWORD_UPDATED', { token: newToken }))
+
+  // update password
+
+  // send session token
+}
+
+export const update = (req, res) => {
+  const { token } = req.params
+  console.log('token', token)
+  console.log('update')
+}
+
+export const deleteuser = (req, res) => {
+  const { token } = req.params
+  console.log('token', token)
+  console.log('delete')
+}
