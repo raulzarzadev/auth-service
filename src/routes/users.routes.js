@@ -29,7 +29,7 @@ router.route('/recover')
 router.route('/recover/:token')
   .post(confirmrecover)
 
-router.route('/signout/:token')
+router.route('/signout')
   .post(signout)
 
 router.route('/:token')

@@ -96,18 +96,28 @@ export const singin = async (req, res) => {
 }
 
 export const signout = async (req, res) => {
-  const { token } = req.params
-  const tokenValidated = await JWTverify(token)
-  const tokenIsClean = await JWTIsClean(token)
+  const { authorization } = req.headers
+
+  const { isValid, isClean, payload } = await JWTVerifyAndInvalidate(
+    authorization
+  )
+  if (!isValid || !isClean) return res.json(formatResponse(200, 'TOKEN_INVALID'))
+  console.log('isValid, isClean, payload', isValid, isClean, payload)
+  await ActiveSession.findByIdAndRemove(payload?.session)
+  return res.json(formatResponse(200, 'SIGNOUT_OK'))
+
+  /*   const tokenValidated = await JWTverify(authorization || token)
+  const tokenIsClean = await JWTIsClean(authorization || token)
+  console.log('token', token) */
 
   // resive token, validate sesion
-  if (!tokenIsClean || !tokenValidated.isValid) {
+  /* if (!tokenIsClean || !tokenValidated.isValid) {
     return res.json(formatResponse(200, 'ERROR'))
   }
   // remove session
   const sessionId = tokenValidated?.payload?.session
   if (sessionId) await ActiveSession.findByIdAndRemove(sessionId)
-  res.json(formatResponse(200, 'SIGNOUT_OK'))
+  res.json(formatResponse(200, 'SIGNOUT_OK')) */
 }
 
 export const recoverpass = async (req, res) => {
