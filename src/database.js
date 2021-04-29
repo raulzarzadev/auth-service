@@ -16,4 +16,3 @@ const connection = mongoose.connection
 connection.once('open', () => {
   console.log('Signup DB is conected')
 })
-  

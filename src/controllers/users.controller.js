@@ -1,15 +1,12 @@
-import { content, htmlContent, subject } from "../EMAIL'S/signup"
 import formatResponse from '../helpers/formatResponse'
 import {
   JWTverify,
   JWTgenerate,
   JWTIsClean,
-  JWTInvalidate,
   JWTVerifyAndInvalidate
 } from '../helpers/JWTutils'
 import sendEmail from '../helpers/sendEmail'
 import ActiveSession from '../models/ActiveSession'
-import InvalidToken from '../models/InvalidToken'
 import User from '../models/User'
 
 export const user = () => {
@@ -105,24 +102,12 @@ export const signout = async (req, res) => {
   console.log('isValid, isClean, payload', isValid, isClean, payload)
   await ActiveSession.findByIdAndRemove(payload?.session)
   return res.json(formatResponse(200, 'SIGNOUT_OK'))
-
-  /*   const tokenValidated = await JWTverify(authorization || token)
-  const tokenIsClean = await JWTIsClean(authorization || token)
-  console.log('token', token) */
-
-  // resive token, validate sesion
-  /* if (!tokenIsClean || !tokenValidated.isValid) {
-    return res.json(formatResponse(200, 'ERROR'))
-  }
-  // remove session
-  const sessionId = tokenValidated?.payload?.session
-  if (sessionId) await ActiveSession.findByIdAndRemove(sessionId)
-  res.json(formatResponse(200, 'SIGNOUT_OK')) */
 }
 
 export const recoverpass = async (req, res) => {
   const { email } = req.body
   const token = JWTgenerate({ email })
+  // resive email
 
   // find user
   const user = await User.findOne({ email, active: true })
@@ -131,6 +116,7 @@ export const recoverpass = async (req, res) => {
   if (!user) return res.json(formatResponse(200, 'EMAIL_SENT*'))
   console.log('recover token', token)
 
+  // send email whit token
   sendEmail({
     to: email,
     subject: 'Recover Password',
@@ -138,9 +124,6 @@ export const recoverpass = async (req, res) => {
     title: 'Recuperando Contraseña'
   })
   res.json(formatResponse(200, 'EMAIL_SENT'))
-
-  // resive email
-  // send email whit token
 }
 export const confirmrecover = async (req, res) => {
   const { token } = req.params
@@ -157,13 +140,11 @@ export const confirmrecover = async (req, res) => {
     { email: 1, active: 1, password: 1 }
   )
   const newPassword = await user.encryptPassword(password)
+  // update password
   await User.findOneAndUpdate({ email: user.email }, { password: newPassword })
+  // send session token
   const newToken = JWTgenerate({ email: user.email })
   return res.json(formatResponse(200, 'PASSWORD_UPDATED', { token: newToken }))
-
-  // update password
-
-  // send session token
 }
 
 export const isSessionActive = async (req, res) => {
