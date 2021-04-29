@@ -53,33 +53,16 @@ export const signup = async (req, res) => {
 export const confirm = async (req, res) => {
   const { token } = req.params
   const { password } = req.body
+  const { isValid, isClean, payload } = await JWTVerifyAndInvalidate(token)
 
-  // check if token is valid
-  const tokenValidated = await JWTverify(token)
-
-  // if (validToken) return formatResponse(401, 'TOKEN_INVALID')
-
-  if (!tokenValidated.isValid) {
-    return res.json(formatResponse(200, 'TOKEN_INVALID'))
-  } // TODO response find but is not valid
-
-  // check if token is inside of invalidList
-  // if exist reject response
-  const tokenIsClean = await JWTIsClean(token)
-  if (!tokenIsClean) {
-    return res.json(formatResponse(200, 'TOKEN_USED'))
-  }
-  // if not exist, saved in and keep working
-  await JWTInvalidate(token)
-
+  if (!isValid || !isClean) return res.json(formatResponse(200, 'TOKEN_INVALID'))
   // resive email, token and pass and update user {email, password , active=true}
   // set pass to user
-  const user = await User.findOne({ email: tokenValidated?.payload?.email })
-  console.log('user, password', user, password, tokenValidated)
+  const user = await User.findOne({ email: payload?.email })
 
   const newPassword = await user.encryptPassword(password)
   await User.updateOne({
-    email: tokenValidated?.payload?.email,
+    email: payload?.email,
     password: newPassword,
     active: true
   })
@@ -89,20 +72,17 @@ export const confirm = async (req, res) => {
 
 export const singin = async (req, res) => {
   const { email, password } = req.body
-  console.log('email, pass', email, password)
-
   // user and password match
   const user = await User.findOne({ email })
   const match = await user.matchPassword(password)
-  console.log('match', match)
-  // if match
+  // if NOT match
+  if (!match) {
+    return res.json(formatResponse(200, 'SIGNIN_FAIL'))
+  }
   const expireInHours = (hours) => {
     const currentTime = new Date().getTime()
     const expireIn = hours * 1000 * 60 * 60
     return currentTime + expireIn // hour * ms
-  }
-  if (!match) {
-    return res.json(formatResponse(200, 'SIGNIN_FAIL'))
   }
   // close other sessions
   await ActiveSession.findOneAndRemove({ email })
@@ -110,7 +90,6 @@ export const singin = async (req, res) => {
     email,
     expire_at: expireInHours(24)
   })
-  console.log('newSession', newSession)
   // send session to activeSession
   await newSession.save()
   // send new token
@@ -165,7 +144,10 @@ export const confirmrecover = async (req, res) => {
   if (!isValid || !isClean) {
     return res.json(formatResponse(200, 'ERROR'))
   }
-  const user = await User.findOne({ email: payload.email }, { email: 1, active: 1, password: 1 })
+  const user = await User.findOne(
+    { email: payload.email },
+    { email: 1, active: 1, password: 1 }
+  )
   const newPassword = await user.encryptPassword(password)
   await User.findOneAndUpdate({ email: user.email }, { password: newPassword })
   const newToken = JWTgenerate({ email: user.email })
