@@ -1,6 +1,17 @@
 const { Router } = require('express')
 const isAuthenticated = require('../authenticatons/jwt.authentication')
-const { signup, user, update, deleteuser, confirm, singin, signout, recoverpass, confirmrecover } = require('../controllers/users.controller')
+const {
+  signup,
+  user,
+  update,
+  deleteuser,
+  confirm,
+  singin,
+  signout,
+  recoverpass,
+  confirmrecover,
+  isSessionActive
+} = require('../controllers/users.controller')
 const router = Router()
 
 /* const {
@@ -31,6 +42,9 @@ router.route('/recover/:token')
 
 router.route('/signout')
   .post(signout)
+
+router.route('/session')
+  .post(isSessionActive)
 
 router.route('/:token')
   .get(user)

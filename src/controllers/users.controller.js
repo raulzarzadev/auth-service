@@ -166,6 +166,15 @@ export const confirmrecover = async (req, res) => {
   // send session token
 }
 
+export const isSessionActive = async (req, res) => {
+  const { authorization } = req.headers
+  const { isValid } = await JWTverify(authorization)
+  const isClean = await JWTIsClean(authorization)
+  console.log('isValid, isClean', isValid, isClean)
+  if (isValid && isClean) return res.json(formatResponse(200, 'SESSION_VALID'))
+  return res.json(formatResponse(401, 'SESSION_INVALID'))
+}
+
 export const update = (req, res) => {
   const { token } = req.params
   console.log('token', token)

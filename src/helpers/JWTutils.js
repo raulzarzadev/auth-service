@@ -31,8 +31,8 @@ export const JWTInvalidate = async (token) => {
 
 export const JWTVerifyAndInvalidate = async (token) => {
   const tokenValidated = await JWTverify(token)
-
   const tokenIsClean = await JWTIsClean(token)
+  console.log('mm', tokenValidated, tokenIsClean)
 
   await JWTInvalidate(token)
   const payload = tokenValidated.payload
