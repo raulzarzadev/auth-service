@@ -35,15 +35,13 @@ export const signup = async (req, res) => {
   const payload = { email }
   const token = JWTgenerate(payload, 0.1)
   console.log('token', token)
-  /*
-  const from = 'auth-serivce'
-  sendEmail(
-    email,
-    from,
-    subject,
-    content,
-    htmlContent(`http://localhost:3015/signup/${token}`)
-  ) */
+
+  sendEmail({
+    to: email,
+    subject: 'Solicitud de Registr0',
+    link: `https://localhost:3015/signup/${token}`,
+    title: 'Concluir Registro'
+  })
 
   // not exist or is not active
   res.json(formatResponse(200, 'EMAIL_SENT'))
@@ -123,12 +121,12 @@ export const recoverpass = async (req, res) => {
   if (!user) return res.json(formatResponse(200, 'EMAIL_SENT*'))
   console.log('recover token', token)
 
-  /* sendEmail({
+  sendEmail({
     to: email,
     subject: 'Recover Password',
     link: `https://localhost:3015/recover/${token}`,
     title: 'Recuperando Contraseña'
-  }) */
+  })
   res.json(formatResponse(200, 'EMAIL_SENT'))
 
   // resive email
