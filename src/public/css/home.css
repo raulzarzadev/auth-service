@@ -1,0 +1,47 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Montserrat', sans-serif;
+  width: 100%;
+}
+
+main {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.form {
+  margin: 1rem 0;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+.cell {
+  width: 33%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px;
+}
+
+.label {
+  justify-content: flex-end;
+}
+
+.input {
+  width: 100%;
+}
+
+.text {
+  border: 0;
+  text-align: center;
+}
+
+.inputs {
+  display: flex;
+  flex-direction: column;
+}

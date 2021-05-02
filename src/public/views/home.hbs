@@ -1,0 +1,56 @@
+<div class="card">
+  <h1 class="title">Auth Service</h1>
+  <div class="forms">
+    {{!-- SESSION FORM--}}
+    <form method="POST" id="form-session" class="form session" enctype="multipart/form-data"
+      action="https://auth.pueblonomada.com/user">
+      <div class="cell">
+        session token
+      </div>
+      <div class="cell label">
+        <input name='authtoken' id="session-token" class="input text" placeholder="session token" />
+      </div>
+      <div class="cell">
+        <button class="input button">Send </button>
+      </div>
+    </form>
+    {{!-- SIGNUP FORM--}}
+    <form method="POST" id="form-signup" class="form signup">
+      <div class="cell label">
+        signup
+      </div>
+      <div class="cell">
+        <input name='email' id="signup-email" class="input text" placeholder="email" />
+      </div>
+      <div class="cell">
+        <button class="input button">Send </button>
+      </div>
+    </form>
+    {{!-- CONFIRM SIGNUP--}}
+    <form method="POST" id="form-confirm" class="form confirm">
+      <div class="cell label">
+        Confirm sign up
+      </div>
+      <div class="cell inputs">
+        <input name='token' id="form-confirm" class="input text" placeholder="token" />
+        <input name="password" id="confirm-pass-signup" class="input text" placeholder="password" />
+      </div>
+      <div class="cell">
+        <button class="input button">Send </button>
+      </div>
+    </form>
+    {{!-- SIGNIN FORM --}}
+    <form method="POST" id="form-signin" class="form signin">
+      <div class="cell label">
+        signin
+      </div>
+      <div class="cell inputs">
+        <input name="email" id="signin-email" class="input text" placeholder="email" />
+        <input name="password" id="signin-pass" class="input text" placeholder="password" />
+      </div>
+      <div class="cell">
+        <button class="input button">Send </button>
+      </div>
+  </div>
+  </form>
+</div>

@@ -26,18 +26,24 @@ export const JWTIsClean = async (token) => {
 export const JWTInvalidate = async (token) => {
   const newInvalidToken = new InvalidToken({ token })
   await newInvalidToken.save()
-  return 'INVALID_TOKE_SAVED'
+  return 'INVALID_TOKEN_SAVED'
 }
 
-export const JWTVerifyAndInvalidate = async (token) => {
+export const JWTVerifyAndInvalidate = async (
+  token,
+  options = { invalidateToken: true }
+) => {
   const tokenValidated = await JWTverify(token)
   const tokenIsClean = await JWTIsClean(token)
-  console.log('mm', tokenValidated, tokenIsClean)
-
-  await JWTInvalidate(token)
+  options?.invalidateToken === true && (await JWTInvalidate(token))
   const payload = tokenValidated.payload
   const isValid = !!tokenValidated.isValid
   const isClean = !!tokenIsClean
+
+  console.log('options', options)
+  console.log('isValid', isValid)
+  console.log('isClean', isClean)
+  console.log('payload', payload)
 
   return { isValid, isClean, payload }
 }

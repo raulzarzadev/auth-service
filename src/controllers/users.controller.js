@@ -12,8 +12,17 @@ import User from '../models/User'
 export const user = () => {
   console.log('user')
 }
+
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*, */
+/*           SIGNUP            */
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'rz */
+
 export const signup = async (req, res) => {
   const { email } = req.body
+  console.log('req.body', req.body)
+
+  const { host } = req.headers
+  if (!email) return res.json(formatResponse(200, 'EMAIL_EMPTY'))
   // find user
   const user = await User.findOne({ email }, { active: 1, _id: 1 })
   // if not exist ,  create user {email, active=flase}
@@ -36,40 +45,64 @@ export const signup = async (req, res) => {
   sendEmail({
     to: email,
     subject: 'Solicitud de Registr0',
-    link: `https://localhost:3015/signup/${token}`,
+    link: `https://${host}/signup/${token}`,
     title: 'Concluir Registro'
   })
 
   // not exist or is not active
-  res.json(formatResponse(200, 'EMAIL_SENT'))
+  return res.json(formatResponse(200, 'EMAIL_SENT'))
   // send email with token
 }
+
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*, */
+/*           CONFIRM SIGN UP             */
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'rz */
 
 export const confirm = async (req, res) => {
   const { token } = req.params
   const { password } = req.body
+
+  console.log('token,password', token, password)
+
   const { isValid, isClean, payload } = await JWTVerifyAndInvalidate(token)
 
-  if (!isValid || !isClean) return res.json(formatResponse(200, 'TOKEN_INVALID'))
+  if (!isValid || !isClean) {
+    console.log('invalido')
+
+    return res.json(formatResponse(200, 'TOKEN_INVALID'))
+  }
   // resive email, token and pass and update user {email, password , active=true}
   // set pass to user
   const user = await User.findOne({ email: payload?.email })
 
   const newPassword = await user.encryptPassword(password)
-  await User.updateOne({
+  await User.findByIdAndUpdate(user._id, {
     email: payload?.email,
     password: newPassword,
     active: true
   })
+  /*   await User.updateOne({
+    email: payload?.email,
+    password: newPassword,
+    active: true
+  }) */
   // send signin-token
-  res.json(formatResponse(200, 'PASSWORD_UPDATED'))
+  return res.json(formatResponse(200, 'PASSWORD_UPDATED'))
 }
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*, */
+/*           SIGN IN            */
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'rz */
 
 export const singin = async (req, res) => {
   const { email, password } = req.body
+  console.log('email, password', email, password)
+
   // user and password match
   const user = await User.findOne({ email })
-  const match = await user.matchPassword(password)
+  const match = user.active && (await user.matchPassword(password))
+
+  console.log('user, match', match)
+
   // if NOT match
   if (!match) {
     return res.json(formatResponse(200, 'SIGNIN_FAIL'))
@@ -91,6 +124,9 @@ export const singin = async (req, res) => {
   const newToken = JWTgenerate({ email, session: newSession._id })
   res.json(formatResponse(200, 'SIGNIN_OK', { token: newToken }))
 }
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*, */
+/*           SIGN OUT            */
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'rz */
 
 export const signout = async (req, res) => {
   const { authorization } = req.headers
@@ -98,11 +134,17 @@ export const signout = async (req, res) => {
   const { isValid, isClean, payload } = await JWTVerifyAndInvalidate(
     authorization
   )
-  if (!isValid || !isClean) return res.json(formatResponse(200, 'TOKEN_INVALID'))
+  if (!isValid || !isClean) {
+    return res.json(formatResponse(200, 'TOKEN_INVALID'))
+  }
   console.log('isValid, isClean, payload', isValid, isClean, payload)
   await ActiveSession.findByIdAndRemove(payload?.session)
   return res.json(formatResponse(200, 'SIGNOUT_OK'))
 }
+
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*, */
+/*           RECOVER PASS            */
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'rz */
 
 export const recoverpass = async (req, res) => {
   const { email } = req.body
@@ -125,12 +167,16 @@ export const recoverpass = async (req, res) => {
   })
   res.json(formatResponse(200, 'EMAIL_SENT'))
 }
+
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*, */
+/*           CONFIRM RECOVER            */
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'rz */
+
 export const confirmrecover = async (req, res) => {
   const { token } = req.params
   const { password } = req.body
   // verifica token
   const { isValid, isClean, payload } = await JWTVerifyAndInvalidate(token)
-  console.log('isValid, isClean', isValid, isClean, payload)
 
   if (!isValid || !isClean) {
     return res.json(formatResponse(200, 'ERROR'))
@@ -147,13 +193,23 @@ export const confirmrecover = async (req, res) => {
   return res.json(formatResponse(200, 'PASSWORD_UPDATED', { token: newToken }))
 }
 
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*, */
+/*           VERIFY SESSION            */
+/* .-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'*,.-°'rz */
+
 export const isSessionActive = async (req, res) => {
   const { authorization } = req.headers
-  const { isValid } = await JWTverify(authorization)
-  const isClean = await JWTIsClean(authorization)
-  console.log('isValid, isClean', isValid, isClean)
-  if (isValid && isClean) return res.json(formatResponse(200, 'SESSION_VALID'))
-  return res.json(formatResponse(401, 'SESSION_INVALID'))
+  const { authtoken } = req.body
+  const { isValid, isClean } = await JWTVerifyAndInvalidate(
+    authorization || authtoken,
+    { invalidateToken: false }
+  )
+
+  if (isValid && isClean) {
+    return res.json(formatResponse(200, 'SESSION_ACTIVE'))
+  } else {
+    return res.json(formatResponse(401, 'SESSION_NOT_ACTIVE'))
+  }
 }
 
 export const update = (req, res) => {
