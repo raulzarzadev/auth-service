@@ -147,6 +147,7 @@ export const signout = async (req, res) => {
 export const recoverpass = async (req, res) => {
   const { email } = req.body
   const token = JWTgenerate({ email })
+  if (!email) return formatResponse(200, 'EMAIL_EMPTY')
   // resive email
 
   // find user

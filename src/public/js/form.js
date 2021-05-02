@@ -20,6 +20,8 @@ const submit = async (e, url, inputs) => {
     })
     .catch((err) => console.log('err', err))
   console.log('response', response)
+  const responseArea = document.getElementById('response-textarea')
+  responseArea.innerHTML = JSON.stringify(response, undefined, 4)
 
   return response
 }

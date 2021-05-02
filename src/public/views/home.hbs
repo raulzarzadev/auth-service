@@ -4,10 +4,10 @@
     {{!-- SESSION FORM--}}
     <form method="POST" id="form-session" class="form session" enctype="multipart/form-data"
       action="https://auth.pueblonomada.com/user">
-      <div class="cell">
+      <div class="cell label">
         session token
       </div>
-      <div class="cell label">
+      <div class="cell ">
         <input name='authtoken' id="session-token" class="input text" placeholder="session token" />
       </div>
       <div class="cell">
@@ -32,7 +32,7 @@
         Confirm sign up
       </div>
       <div class="cell inputs">
-        <input name='token' id="form-confirm" class="input text" placeholder="token" />
+        <input name='token' id="form-confirm-signup" class="input text" placeholder="token" />
         <input name="password" id="confirm-pass-signup" class="input text" placeholder="password" />
       </div>
       <div class="cell">
@@ -70,12 +70,20 @@
         confirm - recover
       </div>
       <div class="cell inputs">
-        <input name='token' id="recover-email" class="input text" placeholder="token" />
+        <input name='token' id="confirm-recover-email" class="input text" placeholder="token" />
         <input name="password" id="recover-pass" class="input text" placeholder="password" />
       </div>
       <div class="cell">
         <button class="input button">Send </button>
       </div>
     </form>
+    {{!-- RESPONSE  --}}
+    <div>
+      <div class="textarea"  >RESPONSE AREA
+        <pre id="response-textarea">
+
+        </pre>
+      </div>
+    </div>
   </div>
 </div>
