@@ -51,6 +51,31 @@
       <div class="cell">
         <button class="input button">Send </button>
       </div>
+    </form>
+    {{!-- RECOVER PASSWORD--}}
+    <form method="POST" id="form-recover" class="form signup">
+      <div class="cell label">
+        recover
+      </div>
+      <div class="cell">
+        <input name='email' id="recover-email" class="input text" placeholder="email" />
+      </div>
+      <div class="cell">
+        <button class="input button">Send </button>
+      </div>
+    </form>
+    {{!-- CONFIRM-RECOVER PASSWORD--}}
+    <form method="POST" id="form-confirm-recover" class="form signup">
+      <div class="cell label">
+        confirm - recover
+      </div>
+      <div class="cell inputs">
+        <input name='token' id="recover-email" class="input text" placeholder="token" />
+        <input name="password" id="recover-pass" class="input text" placeholder="password" />
+      </div>
+      <div class="cell">
+        <button class="input button">Send </button>
+      </div>
+    </form>
   </div>
-  </form>
 </div>

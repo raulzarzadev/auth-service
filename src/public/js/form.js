@@ -40,35 +40,11 @@ document
   .addEventListener('submit', (e) =>
     submit(e, '/user/signin', ['email', 'password'])
   )
-
-/*
-const sessionToken = document.getElementById('session-token')
-const sessionButton = document.getElementById('session-button')
-
-const signupForm = document.getElementById('form-signup')
-
-const signinForm = document.getElementById('form-signin')
-const signinEmail = document.getElementById('signin-email')
-const signinPass = document.getElementById('signin-pass')
-const signinButton = document.getElementById('signin-button')
-
-const basicFunction = e => {
-  e.preventDefault()
-  console.log('e', e)
-}
-
-signupForm.addEventListener('submit', basicFunction)
-
-signinForm.addEventListener('submit', basicFunction)
-
-sessionToken.addEventListener('keyup', function (e) {
-  console.log('e', e.target.value)
-  const { value } = e.target
-  if (value?.length > 2) {
-    console.log('set button')
-    sessionButton.disabled = false
-  } else {
-    sessionButton.disabled = true
-  }
-})
- */
+document
+  .getElementById('form-recover')
+  .addEventListener('submit', (e) => submit(e, '/user/recover', ['email']))
+document
+  .getElementById('form-confirm-recover')
+  .addEventListener('submit', (e) =>
+    submit(e, '/user/recover', ['token', 'password'])
+  )

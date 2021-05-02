@@ -101,8 +101,6 @@ export const singin = async (req, res) => {
   const user = await User.findOne({ email })
   const match = user.active && (await user.matchPassword(password))
 
-  console.log('user, match', match)
-
   // if NOT match
   if (!match) {
     return res.json(formatResponse(200, 'SIGNIN_FAIL'))
