@@ -99,7 +99,9 @@ export const singin = async (req, res) => {
 
   // user and password match
   const user = await User.findOne({ email })
-  const match = user.active && (await user.matchPassword(password))
+  console.log('user', user)
+
+  const match = user?.active && (await user.matchPassword(password))
 
   // if NOT match
   if (!match) {

@@ -37,7 +37,7 @@ main {
 
 .label {
   justify-content: flex-end;
-  font-size: .8rem;
+  font-size: 0.8rem;
 }
 
 .input {
@@ -64,4 +64,6 @@ main {
 .textarea pre {
   text-align: left;
   padding: 8px;
+  max-width: 300px;
+  margin: 0 auto;
 }
